@@ -4,10 +4,12 @@
 [ext_resource type="PackedScene" uid="uid://b56xordbbvcq0" path="res://MazeGenerator/MazeVisualiser.tscn" id="2_r0du0"]
 [ext_resource type="PackedScene" uid="uid://bibxrhj7eydpo" path="res://MazeGenerator/MazeGenerator.tscn" id="3_cm0pq"]
 
-[node name="Main" type="Node2D"]
+[node name="Main" type="Node2D" node_paths=PackedStringArray("generator", "visualiser")]
 script = ExtResource("1_glv2v")
 generator = NodePath("MazeGenerator")
 visualiser = NodePath("MazeVisualiser")
+base_illuminated_radius = 2
+matchstick_hold_time = 1.0
 
 [node name="MazeVisualiser" parent="." node_paths=PackedStringArray("controller") instance=ExtResource("2_r0du0")]
 position = Vector2(555, 334)

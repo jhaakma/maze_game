@@ -23,7 +23,7 @@ func _draw() -> void:
         var dist = distances.get(pos, null)
         var alpha := dim_alpha
         if dist != null and dist <= int(controller.illuminated_radius):
-            var t := float(dist) / controller.illuminated_radius
+            var t: float = float(dist) / controller.illuminated_radius
             alpha = lerp(fully_lit_alpha, dim_alpha, t)
         var base_color = _get_room_color(room.type, controller.is_matchstick_active())
         var color = Color(base_color.r, base_color.g, base_color.b, alpha)
@@ -58,4 +58,3 @@ func regenerate() -> void:
     if controller:
         controller.generate_maze()
         queue_redraw()
-
