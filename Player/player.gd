@@ -7,7 +7,7 @@ signal memory_updated
 @export var position: Vector2i = Vector2i.ZERO
 @export var memory_loss_per_move: float = 0.1  # Amount of memory lost per move
 @export var forget_interval: float = 0.2  # Time in seconds to forget a room
-@export var memory_loss_per_second: float = 0.05  # Amount of memory lost per second
+@export var memory_loss_per_second: float = 0.02  # Amount of memory lost per second
 @export var vision_radius: int = 3  # How far the player can see
 # key: position, value: memory level (0-1)
 var memorised_rooms: Dictionary[Vector2i, float] = {}
@@ -71,5 +71,4 @@ func _on_forget_timer_timeout() -> void:
             memorised_rooms[pos] = max(0.0, memorised_rooms[pos] - memory_loss_per_second * forget_interval)
             if memorised_rooms[pos] <= 0.0:
                 memorised_rooms.erase(pos)  # Remove rooms with no memory left
-    print("Memory updated: ", memorised_rooms)
     emit_signal("memory_updated")

@@ -4,6 +4,9 @@ class_name MazeGenerator
 
 enum RoomType { START, EXIT, ITEM, COMBAT, EVENT, EMPTY }
 
+@onready var room_enter: Room = preload("res://Rooms/room_enter.tres")
+@onready var room_exit: Room = preload("res://Rooms/room_exit.tres")
+@onready var room_empty: Room = preload("res://Rooms/room_empty.tres")
 
 @export var room_count: int = 20
 @export var branch_chance: float = 0.3
@@ -12,6 +15,8 @@ enum RoomType { START, EXIT, ITEM, COMBAT, EVENT, EMPTY }
 @export var bounds_max: Vector2i = Vector2i(5, 5)
 @export var same_direction_chance: float = 0.65
 @export var controller: MazeGame
+@export var room_types: Array[Room] = []
+
 
 const DIRECTIONS: Array[Vector2i] = [
     Vector2i(1, 0),
@@ -43,7 +48,6 @@ func generate_maze(start_pos: Vector2i = Vector2i(0, 0)):
     var walkers: Array[Walker] = []
     var start_dir: Vector2i = DIRECTIONS[randi() % DIRECTIONS.size()]
     walkers.append(Walker.new(start_pos, start_dir))
-    controller.maze_data.maze[start_pos] = RoomExit.new()
 
     while controller.maze_data.maze.size() < room_count and walkers.size() > 0:
         var i: int = randi() % walkers.size()
@@ -76,7 +80,7 @@ func generate_maze(start_pos: Vector2i = Vector2i(0, 0)):
             walker.dir = dir
 
         var next_position: Vector2i = walker.pos + dir
-        controller.maze_data.maze[next_position] = RoomEmpty.new() # Create an empty room
+        controller.maze_data.maze[next_position] = room_empty
         walkers.append(Walker.new(next_position, dir))
         walker.pos = next_position
 
@@ -117,20 +121,20 @@ func find_furthest_room(start_pos: Vector2i) -> Vector2i:
 
 func assign_room_types(start_pos: Vector2i, exit_pos: Vector2i) -> void:
     # Set START and EXIT
-    controller.maze_data.maze[start_pos] = RoomEnter.new()
-    controller.maze_data.maze[exit_pos] = RoomExit.new()
+    controller.maze_data.maze[start_pos] = room_enter
+    controller.maze_data.maze[exit_pos] = room_exit
 
     # Example: Assign one ITEM room and one COMBAT room at random (expand as needed)
     var candidates := []
     for pos in controller.maze_data.maze.keys():
-        if controller.maze_data.maze[pos] is RoomEmpty:
+        if controller.maze_data.maze[pos].empty:
             candidates.append(pos)
-    if candidates.size() > 0:
-        var item_pos = candidates[randi() % candidates.size()]
-        controller.maze_data.maze[item_pos] = RoomItem.new()
-        candidates.erase(item_pos)
-    if candidates.size() > 0:
-        var combat_pos = candidates[randi() % candidates.size()]
-        controller.maze_data.maze[combat_pos] = RoomCombat.new()
-        candidates.erase(combat_pos)
-    # Add more assignment logic as needed (e.g., EVENT rooms, distance checks, etc.)
+
+    # for each empty room, try to spawn a room type
+    for pos in candidates:
+        #pick a random room type
+        var new_room: Room = room_types[randi() % room_types.size()]
+        #Check spawn chance
+        if randf() < new_room.spawn_chance:
+            print("Placing room at ", pos, " with type: ", new_room.description)
+            controller.maze_data.maze[pos] = new_room

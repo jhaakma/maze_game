@@ -19,42 +19,45 @@ func _draw() -> void:
         return
 
     var player = controller.player
-    var player_origin = controller.player.position
-    var player_distances = controller.maze_data.get_distances(player_origin)
-    var matchstick_active = controller.is_matchstick_active()
-    var matchstick_origin = controller.matchstick.get_origin(player_origin)
-    var matchstick_distances = controller.maze_data.get_distances(matchstick_origin) if matchstick_active else {}
+    var player_origin = player.position
+    var matchsticks = controller.matchsticks
+    var matchstick_data = []
+    for m in matchsticks:
+        if m.is_active():
+            var origin = m.get_origin(player_origin)
+            var radius = m.get_radius()
+            var distances = controller.maze_data.get_distances(origin)
+            matchstick_data.append({
+                "distances": distances,
+                "radius": radius
+            })
 
     for pos in maze.keys():
         var room = maze[pos]
 
-        # Always fully illuminate visited rooms
-        var memory_level = controller.player.memorised_rooms.get(pos, 0.0)
+        # Player memory illumination
+        var memory_level = player.memorised_rooms.get(pos, 0.0)
         var player_alpha := dim_alpha
-        var player_dist = player_distances.get(pos, null)
         if memory_level:
             player_alpha = fully_lit_alpha * memory_level
-        # elif player_dist != null and player_dist <= int(player.vision_radius):
-        #     var t: float = float(player_dist) / player.vision_radius
-        #     player_alpha = lerp(fully_lit_alpha, dim_alpha, t)
 
-        # Calculate matchstick-based illumination (use animated radius)
+        # Matchstick illumination: take the brightest from all active matchsticks
         var matchstick_alpha := dim_alpha
-        if matchstick_active:
-            var matchstick_dist = matchstick_distances.get(pos, null)
-            if matchstick_dist != null and matchstick_dist <= int(controller.matchstick.illuminated_radius):
-                var t2: float = float(matchstick_dist) / controller.matchstick.illuminated_radius
-                matchstick_alpha = lerp(fully_lit_alpha, dim_alpha, t2)
+        for m in matchstick_data:
+            var dist = m["distances"].get(pos, null)
+            if dist != null and dist <= int(m["radius"]):
+                var t2: float = float(dist) / m["radius"]
+                var this_alpha = lerp(fully_lit_alpha, dim_alpha, t2)
+                matchstick_alpha = max(matchstick_alpha, this_alpha)
 
-        # Blend: take the brightest, and tint yellow only if matchstick is the brightest
+        # Blend: take the brightest
         var alpha = max(player_alpha, matchstick_alpha)
-
         var color = Color(room.color.r, room.color.g, room.color.b, alpha)
         draw_rect(Rect2(pos * cell_size, Vector2(cell_size, cell_size)), color)
         draw_rect(Rect2(pos * cell_size, Vector2(cell_size, cell_size)), Color(0,0,0,alpha), false, 2.0)
 
     # Draw player at their current position
-    draw_rect(Rect2(controller.player.position * cell_size, Vector2(cell_size, cell_size)), Color(1, 1, 0, 1.0), false, 4.0)
+    draw_rect(Rect2(player.position * cell_size, Vector2(cell_size, cell_size)), Color(1, 1, 0, 1.0), false, 4.0)
 
 func _get_room_color(room: Room) -> Color:
     var color = room.color

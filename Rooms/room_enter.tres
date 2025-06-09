@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Room" load_steps=2 format=3 uid="uid://cujxn3n1nlek0"]
+
+[ext_resource type="Script" uid="uid://bc45bp2ccmjdm" path="res://Rooms/Room.gd" id="1_j2ux8"]
+
+[resource]
+script = ExtResource("1_j2ux8")
+color = Color(0.325, 0.75, 0, 1)
+description = "The entrance to the maze."
+empty = false
+spawn_chance = 0.0
+metadata/_custom_type_script = "uid://bc45bp2ccmjdm"

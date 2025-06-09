@@ -3,6 +3,7 @@ extends Node
 class_name Matchstick
 
 signal illumination_changed
+signal matchstick_out
 
 var active: bool = false
 var origin: Vector2i = Vector2i.ZERO
@@ -38,6 +39,7 @@ func _burst_and_fade() -> void:
     active = false
     origin = Vector2i.ZERO
     illumination_changed.emit()
+    matchstick_out.emit()
 
 func _tween_radius(from: float, to: float, duration: float) -> void:
     var t := 0.0
