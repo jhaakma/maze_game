@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bibxrhj7eydpo"]
+
+[ext_resource type="Script" uid="uid://dypmn3chqtjv0" path="res://MazeGenerator/maze_generator.gd" id="1_rgcb6"]
+
+[node name="MazeGenerator" type="Node2D"]
+script = ExtResource("1_rgcb6")
