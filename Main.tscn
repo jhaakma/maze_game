@@ -1,21 +1,21 @@
 [gd_scene load_steps=4 format=3 uid="uid://dv17qr5akn2xf"]
 
-[ext_resource type="Script" uid="uid://dypmn3chqtjv0" path="res://MazeGenerator/maze_generator.gd" id="1_glv2v"]
+[ext_resource type="Script" uid="uid://c0b70vaq8ime7" path="res://main.gd" id="1_glv2v"]
 [ext_resource type="PackedScene" uid="uid://b56xordbbvcq0" path="res://MazeGenerator/MazeVisualiser.tscn" id="2_r0du0"]
 [ext_resource type="PackedScene" uid="uid://bibxrhj7eydpo" path="res://MazeGenerator/MazeGenerator.tscn" id="3_cm0pq"]
 
-[node name="Main" type="Node2D"]
+[node name="Main" type="Node2D" node_paths=PackedStringArray("generator", "visualiser")]
 script = ExtResource("1_glv2v")
+generator = NodePath("MazeGenerator")
+visualiser = NodePath("MazeVisualiser")
+base_illuminated_radius = 2
+matchstick_hold_time = 1.0
 
-[node name="MazeVisualiser" parent="." node_paths=PackedStringArray("generator") instance=ExtResource("2_r0du0")]
+[node name="MazeVisualiser" parent="." node_paths=PackedStringArray("controller") instance=ExtResource("2_r0du0")]
 position = Vector2(555, 334)
 cell_size = 32
-generator = NodePath("../MazeGenerator")
+controller = NodePath("..")
 dim_alpha = 0.0
-base_illuminated_radius = 2
-matchstick_radius = 8
-matchstick_fade_down_time = 1.5
-matchstick_hold_time = 1.0
 
 [node name="MazeGenerator" parent="." instance=ExtResource("3_cm0pq")]
 position = Vector2(1, 2)
