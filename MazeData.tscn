@@ -1,0 +1,3 @@
+[gd_scene format=3 uid="uid://de3bbdxl27mvk"]
+
+[node name="MazeData" type="Node2D"]
