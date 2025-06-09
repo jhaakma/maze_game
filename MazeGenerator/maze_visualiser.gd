@@ -46,11 +46,12 @@ func _get_room_color(room_type: MazeGenerator.RoomType, matchstick_active: bool)
             color = Color.PURPLE
         MazeGenerator.RoomType.EMPTY:
             color = Color.LIGHT_GRAY
+            # if matchstick is active, use a yellow tint
+            if matchstick_active:
+                color = color.lerp(Color.YELLOW, 0.5)
         _:
             color = Color.GRAY
-    # if matchstick is active, use a yellow tint
-    if matchstick_active:
-        color = color.lerp(Color.YELLOW, 0.5)
+
     return color
 
 # Call this function (from an EditorPlugin or a custom UI button) to regenerate the maze.
