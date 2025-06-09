@@ -3,76 +3,80 @@ class_name MazeGame
 
 @export var generator: MazeGenerator
 @export var visualiser: Node2D
-@export var base_illuminated_radius: int = 1
-@export var matchstick_radius: int = 5
-@export var matchstick_fade_up_time: float = 0.05
-@export var matchstick_fade_down_time: float = 0.5 # seconds
-@export var matchstick_hold_time: float = 3.0 # seconds at max brightness
+@export var matchstick_radius: int = 8
+@export var matchstick_fade_up_time: float = 0.1
+@export var matchstick_fade_down_time: float = 1.5 # seconds
+@export var matchstick_hold_time: float = 2.0 # seconds at max brightness
+@export var player: Player
 
-var maze: Dictionary[Vector2i, MazeGenerator.RoomData] = {}
-var player_pos: Vector2i = Vector2i.ZERO
-var illuminated_radius: float = 1.0
-var _matchstick_active := false
+var maze_data: MazeData
+var matchstick: Matchstick
 
 func _ready() -> void:
-    illuminated_radius = float(base_illuminated_radius)
+    maze_data = MazeData.new()
+    matchstick = Matchstick.new()
+    add_child(matchstick)
+    matchstick.configure(
+        player.vision_radius,
+        matchstick_radius,
+        matchstick_fade_up_time,
+        matchstick_fade_down_time,
+        matchstick_hold_time
+    )
+    matchstick.illumination_changed.connect(_on_illumination_changed)
+    player.memory_updated.connect(_on_illumination_changed)
     if generator == null:
         push_error("MazeGame: No MazeGenerator assigned.")
     else:
         generate_maze()
 
+func _on_illumination_changed() -> void:
+    if visualiser:
+        visualiser.queue_redraw()
+
 func _unhandled_input(event) -> void:
-    if event.is_action_pressed("ui_accept"):
+    var moved := false
+    if event.is_action_pressed("move_left"):
+        player.try_move(Vector2i.LEFT, maze_data)
+        moved = true
+    elif event.is_action_pressed("move_right"):
+        player.try_move(Vector2i.RIGHT, maze_data)
+        moved = true
+    elif event.is_action_pressed("move_up"):
+        player.try_move(Vector2i.UP, maze_data)
+        moved = true
+    elif event.is_action_pressed("move_down"):
+        player.try_move(Vector2i.DOWN, maze_data)
+        moved = true
+    elif event.is_action_pressed("ui_accept"):
         use_matchstick()
+    if moved and visualiser:
+        visualiser.queue_redraw()
 
 func generate_maze() -> void:
-    if generator == null:
-        push_error("MazeGame: No MazeGenerator assigned.")
+    var start_pos: Vector2i = Vector2i.ZERO
+    if generator == null or maze_data == null:
+        push_error("MazeGame: No MazeGenerator or MazeData assigned.")
         return
-    maze = generator.generate_maze()
-    player_pos = Vector2i.ZERO
+    generator.generate_maze(start_pos)
+    if player:
+        player.position = start_pos
     if visualiser:
         visualiser.queue_redraw()
 
 func get_maze_distances(from: Vector2i) -> Dictionary[Vector2i, int]:
-    var distances: Dictionary[Vector2i, int] = {}
-    var queue: Array[Vector2i] = [from]
-    distances[from] = 0
-    while queue.size() > 0:
-        var current = queue.pop_front()
-        var current_dist = distances[current]
-        for dir in MazeGenerator.DIRECTIONS:
-            var neighbor = current + dir
-            if maze.has(neighbor) and not distances.has(neighbor):
-                distances[neighbor] = current_dist + 1
-                queue.append(neighbor)
-    return distances
+    if maze_data == null:
+        return {}
+    return maze_data.get_distances(from)
 
 func use_matchstick() -> void:
-    if _matchstick_active:
-        return
-    _matchstick_active = true
-    await _burst_and_fade_matchstick()
+    matchstick.use(player.position)
 
-func _burst_and_fade_matchstick() -> void:
-    await _tween_radius(float(illuminated_radius), float(matchstick_radius), matchstick_fade_up_time)
-    if matchstick_hold_time > 0.0:
-        await get_tree().create_timer(matchstick_hold_time).timeout
-    await _tween_radius(float(matchstick_radius), float(base_illuminated_radius), matchstick_fade_down_time)
-    illuminated_radius = float(base_illuminated_radius)
-    _matchstick_active = false
-    if visualiser:
-        visualiser.queue_redraw()
+func get_illumination_origin() -> Vector2i:
+    return matchstick.get_origin(player.position)
 
-func _tween_radius(from: float, to: float, duration: float) -> void:
-    var t := 0.0
-    while t < duration:
-        await get_tree().process_frame
-        t += get_process_delta_time()
-        var ratio: float = clamp(t / duration, 0, 1)
-        illuminated_radius = lerp(from, to, ratio)
-        if visualiser:
-            visualiser.queue_redraw()
+func get_illuminated_radius() -> float:
+    return matchstick.get_radius()
 
 func is_matchstick_active() -> bool:
-    return _matchstick_active
+    return matchstick.is_active()

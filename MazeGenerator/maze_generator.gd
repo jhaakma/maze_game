@@ -4,10 +4,6 @@ class_name MazeGenerator
 
 enum RoomType { START, EXIT, ITEM, COMBAT, EVENT, EMPTY }
 
-class RoomData:
-    var type: RoomType
-    func _init(init_type: RoomType = RoomType.EMPTY) -> void:
-        type = init_type
 
 @export var room_count: int = 20
 @export var branch_chance: float = 0.3
@@ -15,6 +11,7 @@ class RoomData:
 @export var bounds_min: Vector2i = Vector2i(-5, -5)
 @export var bounds_max: Vector2i = Vector2i(5, 5)
 @export var same_direction_chance: float = 0.65
+@export var controller: MazeGame
 
 const DIRECTIONS: Array[Vector2i] = [
     Vector2i(1, 0),
@@ -22,8 +19,6 @@ const DIRECTIONS: Array[Vector2i] = [
     Vector2i(0, 1),
     Vector2i(0, -1)
 ]
-
-var maze: Dictionary[Vector2i, RoomData] = {}
 
 class Walker:
     var pos: Vector2i
@@ -38,19 +33,19 @@ func can_place_corridor(next_pos: Vector2i, source_pos: Vector2i) -> bool:
         var check_pos = next_pos + dir
         if check_pos == source_pos:
             continue
-        if maze.has(check_pos):
+        if controller.maze_data.maze.has(check_pos):
             adjacent_count += 1
     # Only place if adjacent to exactly 0 (dead end) or 1 existing room (the parent)
     return adjacent_count == 0
 
-func generate_maze(start_pos: Vector2i = Vector2i(0, 0)) -> Dictionary[Vector2i, RoomData]:
-    maze.clear()
+func generate_maze(start_pos: Vector2i = Vector2i(0, 0)):
+    controller.maze_data.maze.clear()
     var walkers: Array[Walker] = []
     var start_dir: Vector2i = DIRECTIONS[randi() % DIRECTIONS.size()]
     walkers.append(Walker.new(start_pos, start_dir))
-    maze[start_pos] = RoomData.new(RoomType.START)
+    controller.maze_data.maze[start_pos] = RoomExit.new()
 
-    while maze.size() < room_count and walkers.size() > 0:
+    while controller.maze_data.maze.size() < room_count and walkers.size() > 0:
         var i: int = randi() % walkers.size()
         var walker: Walker = walkers[i]
 
@@ -61,7 +56,7 @@ func generate_maze(start_pos: Vector2i = Vector2i(0, 0)) -> Dictionary[Vector2i,
             if (
                 next_pos.x < bounds_min.x or next_pos.x > bounds_max.x
                 or next_pos.y < bounds_min.y or next_pos.y > bounds_max.y
-                or maze.has(next_pos)
+                or controller.maze_data.maze.has(next_pos)
                 or not can_place_corridor(next_pos, walker.pos)
             ):
                 continue
@@ -80,10 +75,10 @@ func generate_maze(start_pos: Vector2i = Vector2i(0, 0)) -> Dictionary[Vector2i,
             dir = valid_dirs[randi() % valid_dirs.size()]
             walker.dir = dir
 
-        var next_pos: Vector2i = walker.pos + dir
-        maze[next_pos] = RoomData.new(RoomType.EMPTY)
-        walkers.append(Walker.new(next_pos, dir))
-        walker.pos = next_pos
+        var next_position: Vector2i = walker.pos + dir
+        controller.maze_data.maze[next_position] = RoomEmpty.new() # Create an empty room
+        walkers.append(Walker.new(next_position, dir))
+        walker.pos = next_position
 
         # Branch
         if walkers.size() < max_walkers and randf() < branch_chance:
@@ -93,7 +88,14 @@ func generate_maze(start_pos: Vector2i = Vector2i(0, 0)) -> Dictionary[Vector2i,
 
         # Only remove a walker if it has no valid moves, handled at the start of loop
 
-    # Furthest exit logic (unchanged)
+    # At this point, all rooms are EMPTY except the START room.
+    # Find furthest room for EXIT (structure only)
+    var furthest_pos = find_furthest_room(start_pos)
+    # Assign special room types in a separate pass
+    assign_room_types(start_pos, furthest_pos)
+
+
+func find_furthest_room(start_pos: Vector2i) -> Vector2i:
     var visited: Dictionary[Vector2i, int] = {}
     var queue: Array[Vector2i] = [start_pos]
     visited[start_pos] = 0
@@ -108,11 +110,27 @@ func generate_maze(start_pos: Vector2i = Vector2i(0, 0)) -> Dictionary[Vector2i,
             furthest_pos = current
         for dir in DIRECTIONS:
             var neighbor: Vector2i = current + dir
-            if maze.has(neighbor) and not visited.has(neighbor):
+            if controller.maze_data.maze.has(neighbor) and not visited.has(neighbor):
                 visited[neighbor] = dist + 1
                 queue.append(neighbor)
+    return furthest_pos
 
-    if furthest_pos != start_pos:
-        maze[furthest_pos].type = RoomType.EXIT
+func assign_room_types(start_pos: Vector2i, exit_pos: Vector2i) -> void:
+    # Set START and EXIT
+    controller.maze_data.maze[start_pos] = RoomEnter.new()
+    controller.maze_data.maze[exit_pos] = RoomExit.new()
 
-    return maze
+    # Example: Assign one ITEM room and one COMBAT room at random (expand as needed)
+    var candidates := []
+    for pos in controller.maze_data.maze.keys():
+        if controller.maze_data.maze[pos] is RoomEmpty:
+            candidates.append(pos)
+    if candidates.size() > 0:
+        var item_pos = candidates[randi() % candidates.size()]
+        controller.maze_data.maze[item_pos] = RoomItem.new()
+        candidates.erase(item_pos)
+    if candidates.size() > 0:
+        var combat_pos = candidates[randi() % candidates.size()]
+        controller.maze_data.maze[combat_pos] = RoomCombat.new()
+        candidates.erase(combat_pos)
+    # Add more assignment logic as needed (e.g., EVENT rooms, distance checks, etc.)

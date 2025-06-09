@@ -3,7 +3,7 @@ extends Node2D
 ## Draws the maze based on the state provided by a controller node.
 
 @export var cell_size: int = 48
-@export var controller: Node
+@export var controller: MazeGame
 @export var fully_lit_alpha: float = 1.0
 @export var dim_alpha: float = 0.1
 
@@ -12,46 +12,52 @@ func _ready() -> void:
         push_error("MazeVisualiser: No controller assigned.")
 
 func _draw() -> void:
-    if controller == null:
+    if controller == null or controller.maze_data == null or controller.player == null:
         return
-    var maze: Dictionary = controller.maze
+    var maze: Dictionary = controller.maze_data.maze
     if maze.is_empty():
         return
-    var distances = controller.get_maze_distances(controller.player_pos)
+
+    var player = controller.player
+    var player_origin = controller.player.position
+    var player_distances = controller.maze_data.get_distances(player_origin)
+    var matchstick_active = controller.is_matchstick_active()
+    var matchstick_origin = controller.matchstick.get_origin(player_origin)
+    var matchstick_distances = controller.maze_data.get_distances(matchstick_origin) if matchstick_active else {}
+
     for pos in maze.keys():
         var room = maze[pos]
-        var dist = distances.get(pos, null)
-        var alpha := dim_alpha
-        if dist != null and dist <= int(controller.illuminated_radius):
-            var t: float = float(dist) / controller.illuminated_radius
-            alpha = lerp(fully_lit_alpha, dim_alpha, t)
-        var base_color = _get_room_color(room.type, controller.is_matchstick_active())
-        var color = Color(base_color.r, base_color.g, base_color.b, alpha)
+
+        # Always fully illuminate visited rooms
+        var memory_level = controller.player.memorised_rooms.get(pos, 0.0)
+        var player_alpha := dim_alpha
+        var player_dist = player_distances.get(pos, null)
+        if memory_level:
+            player_alpha = fully_lit_alpha * memory_level
+        # elif player_dist != null and player_dist <= int(player.vision_radius):
+        #     var t: float = float(player_dist) / player.vision_radius
+        #     player_alpha = lerp(fully_lit_alpha, dim_alpha, t)
+
+        # Calculate matchstick-based illumination (use animated radius)
+        var matchstick_alpha := dim_alpha
+        if matchstick_active:
+            var matchstick_dist = matchstick_distances.get(pos, null)
+            if matchstick_dist != null and matchstick_dist <= int(controller.matchstick.illuminated_radius):
+                var t2: float = float(matchstick_dist) / controller.matchstick.illuminated_radius
+                matchstick_alpha = lerp(fully_lit_alpha, dim_alpha, t2)
+
+        # Blend: take the brightest, and tint yellow only if matchstick is the brightest
+        var alpha = max(player_alpha, matchstick_alpha)
+
+        var color = Color(room.color.r, room.color.g, room.color.b, alpha)
         draw_rect(Rect2(pos * cell_size, Vector2(cell_size, cell_size)), color)
         draw_rect(Rect2(pos * cell_size, Vector2(cell_size, cell_size)), Color(0,0,0,alpha), false, 2.0)
-    draw_rect(Rect2(controller.player_pos * cell_size, Vector2(cell_size, cell_size)), Color(1, 1, 0, 1.0), false, 4.0)
 
-func _get_room_color(room_type: MazeGenerator.RoomType, matchstick_active: bool) -> Color:
-    var color: Color
-    match room_type:
-        MazeGenerator.RoomType.START:
-            color = Color.LIME_GREEN
-        MazeGenerator.RoomType.EXIT:
-            color = Color.RED
-        MazeGenerator.RoomType.ITEM:
-            color = Color.DODGER_BLUE
-        MazeGenerator.RoomType.COMBAT:
-            color = Color.ORANGE
-        MazeGenerator.RoomType.EVENT:
-            color = Color.PURPLE
-        MazeGenerator.RoomType.EMPTY:
-            color = Color.LIGHT_GRAY
-            # if matchstick is active, use a yellow tint
-            if matchstick_active:
-                color = color.lerp(Color.YELLOW, 0.5)
-        _:
-            color = Color.GRAY
+    # Draw player at their current position
+    draw_rect(Rect2(controller.player.position * cell_size, Vector2(cell_size, cell_size)), Color(1, 1, 0, 1.0), false, 4.0)
 
+func _get_room_color(room: Room) -> Color:
+    var color = room.color
     return color
 
 # Call this function (from an EditorPlugin or a custom UI button) to regenerate the maze.
