@@ -8,6 +8,7 @@ class_name Room
 @export var behaviour: Script = null
 @export var empty: bool = false
 @export var spawn_chance: float = 1.0
+@export var entities: Array[Entity] = []
 
 var visited: bool = false
 
@@ -19,3 +20,6 @@ func on_enter(game: MazeGame) -> void:
             instance.on_enter(game)
         else:
             push_error("Room: Assigned behaviour script is not a RoomBehaviour.")
+    for entity in entities:
+        if entity is Entity:
+            entity.on_enter(game, self)

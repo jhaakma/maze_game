@@ -66,6 +66,17 @@ func _draw() -> void:
             var icon_color = Color(1, 1, 1, alpha)  # White with the same alpha
             draw_texture_rect(icon, Rect2(icon_pos, icon_size), false, icon_color)
 
+        # Draw entity icons
+        var ent_index := 0
+        for ent in room.entities:
+            if ent.icon:
+                var e_size = Vector2(cell_size, cell_size) * 0.4
+                var offset = Vector2(ent_index % 2, ent_index / 2) * (e_size * 0.1)
+                var e_pos = Vector2(pos) * cell_size + (Vector2(cell_size, cell_size) - e_size) / 2.0 + offset
+                var e_color = Color(1,1,1, alpha)
+                draw_texture_rect(ent.icon, Rect2(e_pos, e_size), false, e_color)
+                ent_index += 1
+
 
     # Draw player at their current position
     draw_rect(Rect2(player.position * cell_size, Vector2(cell_size, cell_size)), Color(1, 1, 0, 1.0), false, 4.0)

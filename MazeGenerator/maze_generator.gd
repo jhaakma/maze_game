@@ -2,6 +2,9 @@ extends Node
 
 class_name MazeGenerator
 
+const Item = preload("res://Entities/Item.gd")
+const Enemy = preload("res://Entities/Enemy.gd")
+
 enum RoomType { START, EXIT, ITEM, COMBAT, EVENT, EMPTY }
 
 @onready var room_enter: Room = preload("res://Rooms/room_enter.tres")
@@ -21,6 +24,8 @@ enum RoomType { START, EXIT, ITEM, COMBAT, EVENT, EMPTY }
 ## `MazeData` instance, so this property stores the data directly.
 @export var maze_data: MazeData
 @export var room_types: Array[Room] = []
+@export var item_types: Array[Item] = []
+@export var enemy_types: Array[Enemy] = []
 
 
 const DIRECTIONS: Array[Vector2i] = [
@@ -136,14 +141,23 @@ func assign_room_types(start_pos: Vector2i, exit_pos: Vector2i) -> void:
         if maze_data.maze[pos].empty:
             candidates.append(pos)
 
-    if room_types.is_empty():
-        return
+    if not room_types.is_empty():
+        # for each empty room, try to spawn a room type
+        for pos in candidates:
+            var new_room: Room = room_types[randi() % room_types.size()]
+            if randf() < new_room.spawn_chance:
+                maze_data.maze[pos] = new_room.duplicate()
 
-    # for each empty room, try to spawn a room type
-    for pos in candidates:
-        #pick a random room type
-        var new_room: Room = room_types[randi() % room_types.size()]
-        #Check spawn chance
-        if randf() < new_room.spawn_chance:
-            print("Placing room at ", pos, " with type: ", new_room.description)
-            maze_data.maze[pos] = new_room.duplicate()
+    # After assigning room types, spawn items and enemies in rooms
+    for pos in maze_data.maze.keys():
+        if pos == start_pos or pos == exit_pos:
+            continue
+        var room: Room = maze_data.maze[pos]
+        for item in item_types:
+            if randf() < item.spawn_chance:
+                room.entities.append(item.duplicate())
+                break
+        for enemy in enemy_types:
+            if randf() < enemy.spawn_chance:
+                room.entities.append(enemy.duplicate())
+                break
