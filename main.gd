@@ -49,7 +49,7 @@ func generate_maze() -> void:
     if generator == null or maze_data == null:
         push_error("MazeGame: No MazeGenerator or MazeData assigned.")
         return
-    generator.generate_maze(start_pos)
+    generator.generate_maze(maze_data, start_pos)
     if player:
         player.position = start_pos
     if visualiser:

@@ -14,7 +14,12 @@ enum RoomType { START, EXIT, ITEM, COMBAT, EVENT, EMPTY }
 @export var bounds_min: Vector2i = Vector2i(-5, -5)
 @export var bounds_max: Vector2i = Vector2i(5, 5)
 @export var same_direction_chance: float = 0.65
-@export var controller: MazeGame
+## The MazeData resource that will be populated when generating a maze.
+##
+## The generator previously required a full `MazeGame` controller in order to
+## access its `maze_data` field.  For unit tests and other tools we only need a
+## `MazeData` instance, so this property stores the data directly.
+@export var maze_data: MazeData
 @export var room_types: Array[Room] = []
 
 
@@ -38,18 +43,19 @@ func can_place_corridor(next_pos: Vector2i, source_pos: Vector2i) -> bool:
         var check_pos = next_pos + dir
         if check_pos == source_pos:
             continue
-        if controller.maze_data.maze.has(check_pos):
+        if maze_data.maze.has(check_pos):
             adjacent_count += 1
     # Only place if adjacent to exactly 0 (dead end) or 1 existing room (the parent)
     return adjacent_count == 0
 
-func generate_maze(start_pos: Vector2i = Vector2i(0, 0)):
-    controller.maze_data.maze.clear()
+func generate_maze(data: MazeData, start_pos: Vector2i = Vector2i(0, 0)):
+    maze_data = data
+    maze_data.maze.clear()
     var walkers: Array[Walker] = []
     var start_dir: Vector2i = DIRECTIONS[randi() % DIRECTIONS.size()]
     walkers.append(Walker.new(start_pos, start_dir))
 
-    while controller.maze_data.maze.size() < room_count and walkers.size() > 0:
+    while maze_data.maze.size() < room_count and walkers.size() > 0:
         var i: int = randi() % walkers.size()
         var walker: Walker = walkers[i]
 
@@ -60,7 +66,7 @@ func generate_maze(start_pos: Vector2i = Vector2i(0, 0)):
             if (
                 next_pos.x < bounds_min.x or next_pos.x > bounds_max.x
                 or next_pos.y < bounds_min.y or next_pos.y > bounds_max.y
-                or controller.maze_data.maze.has(next_pos)
+                or maze_data.maze.has(next_pos)
                 or not can_place_corridor(next_pos, walker.pos)
             ):
                 continue
@@ -80,7 +86,7 @@ func generate_maze(start_pos: Vector2i = Vector2i(0, 0)):
             walker.dir = dir
 
         var next_position: Vector2i = walker.pos + dir
-        controller.maze_data.maze[next_position] = room_empty
+        maze_data.maze[next_position] = room_empty
         walkers.append(Walker.new(next_position, dir))
         walker.pos = next_position
 
@@ -114,21 +120,24 @@ func find_furthest_room(start_pos: Vector2i) -> Vector2i:
             furthest_pos = current
         for dir in DIRECTIONS:
             var neighbor: Vector2i = current + dir
-            if controller.maze_data.maze.has(neighbor) and not visited.has(neighbor):
+            if maze_data.maze.has(neighbor) and not visited.has(neighbor):
                 visited[neighbor] = dist + 1
                 queue.append(neighbor)
     return furthest_pos
 
 func assign_room_types(start_pos: Vector2i, exit_pos: Vector2i) -> void:
     # Set START and EXIT
-    controller.maze_data.maze[start_pos] = room_enter
-    controller.maze_data.maze[exit_pos] = room_exit
+    maze_data.maze[start_pos] = room_enter
+    maze_data.maze[exit_pos] = room_exit
 
     # Example: Assign one ITEM room and one COMBAT room at random (expand as needed)
     var candidates := []
-    for pos in controller.maze_data.maze.keys():
-        if controller.maze_data.maze[pos].empty:
+    for pos in maze_data.maze.keys():
+        if maze_data.maze[pos].empty:
             candidates.append(pos)
+
+    if room_types.is_empty():
+        return
 
     # for each empty room, try to spawn a room type
     for pos in candidates:
@@ -137,4 +146,4 @@ func assign_room_types(start_pos: Vector2i, exit_pos: Vector2i) -> void:
         #Check spawn chance
         if randf() < new_room.spawn_chance:
             print("Placing room at ", pos, " with type: ", new_room.description)
-            controller.maze_data.maze[pos] = new_room
+            maze_data.maze[pos] = new_room
