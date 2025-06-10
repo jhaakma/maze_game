@@ -146,4 +146,4 @@ func assign_room_types(start_pos: Vector2i, exit_pos: Vector2i) -> void:
         #Check spawn chance
         if randf() < new_room.spawn_chance:
             print("Placing room at ", pos, " with type: ", new_room.description)
-            maze_data.maze[pos] = new_room
+            maze_data.maze[pos] = new_room.duplicate()

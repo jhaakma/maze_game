@@ -1,11 +1,15 @@
-[gd_resource type="Resource" script_class="Room" load_steps=3 format=3 uid="uid://72y2o8eu65fq"]
+[gd_resource type="Resource" script_class="Room" load_steps=5 format=3 uid="uid://72y2o8eu65fq"]
 
 [ext_resource type="Script" uid="uid://dowt3h43cc4km" path="res://Rooms/Behaviours/room_behaviour_item.gd" id="1_gc3mh"]
 [ext_resource type="Script" uid="uid://bc45bp2ccmjdm" path="res://Rooms/Room.gd" id="1_oopq0"]
+[ext_resource type="Texture2D" uid="uid://u2ck2f6momit" path="res://Icons/Chest.png" id="2_xlohp"]
+[ext_resource type="Texture2D" uid="uid://cyq7xbenmkgbr" path="res://Icons/Chest_Open.png" id="3_7eh57"]
 
 [resource]
 script = ExtResource("1_oopq0")
-color = Color(0.914301, 0.692392, 0.531243, 1)
+color = Color(0.61837, 0.78555, 0.76195, 1)
+icon = ExtResource("2_xlohp")
+icon_visited = ExtResource("3_7eh57")
 description = "A generic room."
 behaviour = ExtResource("1_gc3mh")
 empty = false

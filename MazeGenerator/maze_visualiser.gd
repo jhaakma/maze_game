@@ -52,9 +52,20 @@ func _draw() -> void:
 
         # Blend: take the brightest
         var alpha = max(player_alpha, matchstick_alpha)
+        if player.position == pos:
+            alpha = 1.0  # Always fully lit at player positiona
         var color = Color(room.color.r, room.color.g, room.color.b, alpha)
         draw_rect(Rect2(pos * cell_size, Vector2(cell_size, cell_size)), color)
         draw_rect(Rect2(pos * cell_size, Vector2(cell_size, cell_size)), Color(0,0,0,alpha), false, 2.0)
+
+        # Draw room icon if available, with alpha
+        if room.icon:
+            var icon = room.icon_visited if room.visited and room.icon_visited else room.icon
+            var icon_size = Vector2(cell_size, cell_size) * 0.8
+            var icon_pos = Vector2(pos) * cell_size + (Vector2(cell_size, cell_size) - icon_size) / 2.0
+            var icon_color = Color(1, 1, 1, alpha)  # White with the same alpha
+            draw_texture_rect(icon, Rect2(icon_pos, icon_size), false, icon_color)
+
 
     # Draw player at their current position
     draw_rect(Rect2(player.position * cell_size, Vector2(cell_size, cell_size)), Color(1, 1, 0, 1.0), false, 4.0)

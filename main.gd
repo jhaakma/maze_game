@@ -1,6 +1,8 @@
 extends Node2D
 class_name MazeGame
 
+@onready var camera: Camera2D = $Camera2D
+
 @export var generator: MazeGenerator
 @export var visualiser: Node2D
 @export var matchstick_radius: int = 8
@@ -16,6 +18,7 @@ func _ready() -> void:
     maze_data = MazeData.new()
     # No longer create a single matchstick here
     player.memory_updated.connect(_on_illumination_changed)
+    player.position_changed.connect(_on_player_position_changed)
     if generator == null:
         push_error("MazeGame: No MazeGenerator assigned.")
     else:
@@ -25,19 +28,23 @@ func _on_illumination_changed() -> void:
     if visualiser:
         visualiser.queue_redraw()
 
+#update camera position
+func _on_player_position_changed(new_position: Vector2i) -> void:
+    camera.update_camera_position(new_position)
+
 func _unhandled_input(event) -> void:
     var moved := false
     if event.is_action_pressed("move_left"):
-        player.try_move(Vector2i.LEFT, maze_data)
+        player.try_move(Vector2i.LEFT, self)
         moved = true
     elif event.is_action_pressed("move_right"):
-        player.try_move(Vector2i.RIGHT, maze_data)
+        player.try_move(Vector2i.RIGHT, self)
         moved = true
     elif event.is_action_pressed("move_up"):
-        player.try_move(Vector2i.UP, maze_data)
+        player.try_move(Vector2i.UP, self)
         moved = true
     elif event.is_action_pressed("move_down"):
-        player.try_move(Vector2i.DOWN, maze_data)
+        player.try_move(Vector2i.DOWN, self)
         moved = true
     elif event.is_action_pressed("ui_accept"):
         use_matchstick()
@@ -45,6 +52,10 @@ func _unhandled_input(event) -> void:
         visualiser.queue_redraw()
 
 func generate_maze() -> void:
+    matchsticks.clear()
+    if player:
+        player.clear_memory()
+
     var start_pos: Vector2i = Vector2i.ZERO
     if generator == null or maze_data == null:
         push_error("MazeGame: No MazeGenerator or MazeData assigned.")
@@ -52,6 +63,7 @@ func generate_maze() -> void:
     generator.generate_maze(maze_data, start_pos)
     if player:
         player.position = start_pos
+        player.learn_rooms(maze_data)
     if visualiser:
         visualiser.queue_redraw()
 

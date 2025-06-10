@@ -3,6 +3,7 @@ extends Node
 class_name Player
 
 signal memory_updated
+signal position_changed
 
 @export var position: Vector2i = Vector2i.ZERO
 @export var memory_loss_per_move: float = 0.1  # Amount of memory lost per move
@@ -25,14 +26,15 @@ func _ready():
     add_child(forget_timer)
     forget_timer.start()
 
-func try_move(direction: Vector2i, maze_data: MazeData) -> void:
+func try_move(direction: Vector2i, game: MazeGame) -> void:
     var new_pos = position + direction
-    if maze_data.maze.has(new_pos):
+    if game.maze_data.maze.has(new_pos):
         position = new_pos
-        var room = maze_data.maze[new_pos]
+        var room = game.maze_data.maze[new_pos]
         if room is Room:
-            room.on_enter(self)
-            learn_rooms(maze_data)
+            room.on_enter(game)
+            learn_rooms(game.maze_data)
+            position_changed.emit(position)
         else:
             print("No valid room at position: ", new_pos)
         forget_rooms()
@@ -59,6 +61,11 @@ func forget_rooms():
             memorised_rooms[pos] = max(0.0, memorised_rooms[pos] - memory_loss_per_move)
             if memorised_rooms[pos] <= 0.0:
                 memorised_rooms.erase(pos)  # Remove rooms with no memory left
+func clear_memory():
+    memorised_rooms.clear()
+    memorised_rooms[position] = 1.0  # Reset memory for current position
+    emit_signal("memory_updated")
+
 
 func fail_move(new_pos: Vector2i) -> void:
     print("Cannot move to position: ", new_pos, " - no room exists there.")

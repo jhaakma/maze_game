@@ -1,14 +1,13 @@
 [gd_resource type="Resource" script_class="Room" load_steps=3 format=3 uid="uid://bunmenujigws0"]
 
+[ext_resource type="Script" uid="uid://droqcopdtno7x" path="res://Rooms/Behaviours/room_behaviour_exit.gd" id="1_1u5sl"]
 [ext_resource type="Script" uid="uid://bc45bp2ccmjdm" path="res://Rooms/Room.gd" id="1_ov1po"]
-
-[sub_resource type="GDScript" id="GDScript_ov1po"]
 
 [resource]
 script = ExtResource("1_ov1po")
 color = Color(0.75, 0, 0, 1)
 description = "The exit to the maze."
-behaviour = SubResource("GDScript_ov1po")
+behaviour = ExtResource("1_1u5sl")
 empty = false
 spawn_chance = 0.0
 metadata/_custom_type_script = "uid://bc45bp2ccmjdm"
