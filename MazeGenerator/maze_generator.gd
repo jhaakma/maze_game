@@ -91,7 +91,7 @@ func generate_maze(data: MazeData, start_pos: Vector2i = Vector2i(0, 0)):
             walker.dir = dir
 
         var next_position: Vector2i = walker.pos + dir
-        maze_data.maze[next_position] = room_empty
+        maze_data.maze[next_position] = room_empty.duplicate()  # Place an empty room at the next position
         walkers.append(Walker.new(next_position, dir))
         walker.pos = next_position
 

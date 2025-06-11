@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="Enemy" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="Enemy" load_steps=3 format=3 uid="uid://c0d1q2c4uqejf"]
 
 [ext_resource type="Script" path="res://Entities/Enemy.gd" id="1"]
-[ext_resource type="Texture2D" path="res://icon.svg" id="2"]
+[ext_resource type="Texture2D" uid="uid://ps6te5lfowo5" path="res://icon.svg" id="2"]
+
 [resource]
 script = ExtResource("1")
 name = "Slime"
