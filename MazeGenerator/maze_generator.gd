@@ -2,10 +2,9 @@ extends Node
 
 class_name MazeGenerator
 
-const Item = preload("res://Entities/Item.gd")
-const Enemy = preload("res://Entities/Enemy.gd")
-
 enum RoomType { START, EXIT, ITEM, COMBAT, EVENT, EMPTY }
+
+signal maze_generated(maze_data: MazeData)
 
 @onready var room_enter: Room = preload("res://Rooms/room_enter.tres")
 @onready var room_exit: Room = preload("res://Rooms/room_exit.tres")
@@ -108,6 +107,7 @@ func generate_maze(data: MazeData, start_pos: Vector2i = Vector2i(0, 0)):
     var furthest_pos = find_furthest_room(start_pos)
     # Assign special room types in a separate pass
     assign_room_types(start_pos, furthest_pos)
+    maze_generated.emit(maze_data)
 
 
 func find_furthest_room(start_pos: Vector2i) -> Vector2i:

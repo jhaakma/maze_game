@@ -5,8 +5,8 @@
 [ext_resource type="PackedScene" uid="uid://bibxrhj7eydpo" path="res://MazeGenerator/MazeGenerator.tscn" id="3_cm0pq"]
 [ext_resource type="Script" path="res://Entities/Item.gd" id="4_03owx"]
 [ext_resource type="PackedScene" uid="uid://de7e471aj42si" path="res://Player/Player.tscn" id="4_cm0pq"]
-[ext_resource type="Resource" path="res://Items/Chest/chest_item.tres" id="5_chest"]
-[ext_resource type="Resource" uid="uid://cinw8hoxdgfwp" path="res://Enemies/Slime/slime_enemy.tres" id="6_slime"]
+[ext_resource type="Resource" uid="uid://bjsfhy6sv4ntn" path="res://Items/Chest/chest_item.tres" id="5_chest"]
+[ext_resource type="Resource" uid="uid://c0d1q2c4uqejf" path="res://Enemies/Slime/slime_enemy.tres" id="6_slime"]
 [ext_resource type="Script" path="res://Entities/Enemy.gd" id="6_wkp8b"]
 [ext_resource type="Script" uid="uid://bx85nu0nabb6q" path="res://camera_2d.gd" id="7_lgr22"]
 
@@ -25,7 +25,7 @@ dim_alpha = 0.0
 
 [node name="MazeGenerator" parent="." instance=ExtResource("3_cm0pq")]
 position = Vector2(1, 2)
-room_count = 100
+room_count = 40
 branch_chance = 0.1
 max_walkers = 3
 bounds_min = Vector2i(-10, -8)

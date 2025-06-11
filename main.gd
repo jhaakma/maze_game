@@ -19,6 +19,7 @@ func _ready() -> void:
     # No longer create a single matchstick here
     player.memory_updated.connect(_on_illumination_changed)
     player.position_changed.connect(_on_player_position_changed)
+    generator.maze_generated.connect(visualiser.queue_redraw)
     if generator == null:
         push_error("MazeGame: No MazeGenerator assigned.")
     else:

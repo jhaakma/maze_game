@@ -7,4 +7,4 @@
 script = ExtResource("1")
 name = "Slime"
 icon = ExtResource("2")
-spawn_chance = 0.1
+spawn_chance = 0.2

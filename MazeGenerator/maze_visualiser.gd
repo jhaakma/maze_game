@@ -84,6 +84,7 @@ func _get_room_color(room: Room) -> Color:
     var color = room.color
     return color
 
+
 # Call this function (from an EditorPlugin or a custom UI button) to regenerate the maze.
 func regenerate() -> void:
     if controller:
