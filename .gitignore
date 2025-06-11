@@ -3,3 +3,5 @@
 /android/
 Godot_v4.4.1-stable_linux.x86_64
 Godot_v4.4.1-stable_linux.x86_64.zip
+#Godot executable (for launching the game)
+/*.exe
