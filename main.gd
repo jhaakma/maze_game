@@ -20,13 +20,17 @@ func _ready() -> void:
     input_handler.player = player
     input_handler.game = self
     input_handler.matchstick_manager = matchstick_manager
-    generator.maze_generated.connect(visualiser.queue_redraw)
+    generator.maze_generated.connect(_on_maze_generated)
     if generator == null:
         push_error("MazeGame: No MazeGenerator assigned.")
     else:
         generate_maze()
 
 func _on_illumination_changed() -> void:
+    if visualiser:
+        visualiser.queue_redraw()
+
+func _on_maze_generated() -> void:
     if visualiser:
         visualiser.queue_redraw()
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://dv17qr5akn2xf"]
+[gd_scene load_steps=12 format=3 uid="uid://dv17qr5akn2xf"]
 
 [ext_resource type="Script" uid="uid://c0b70vaq8ime7" path="res://main.gd" id="1_glv2v"]
 [ext_resource type="PackedScene" uid="uid://b56xordbbvcq0" path="res://MazeGenerator/MazeVisualiser.tscn" id="2_r0du0"]
@@ -9,8 +9,8 @@
 [ext_resource type="Resource" uid="uid://c0d1q2c4uqejf" path="res://Enemies/Slime/slime_enemy.tres" id="6_slime"]
 [ext_resource type="Script" path="res://Entities/Enemy.gd" id="6_wkp8b"]
 [ext_resource type="Script" uid="uid://bx85nu0nabb6q" path="res://camera_2d.gd" id="7_lgr22"]
-[ext_resource type="Script" path="res://Game/input_handler.gd" id="8_input"]
-[ext_resource type="Script" path="res://Game/matchstick_manager.gd" id="9_match"]
+[ext_resource type="Script" uid="uid://cqunvoqonjcng" path="res://Game/input_handler.gd" id="8_input"]
+[ext_resource type="Script" uid="uid://bqcvykf6b4wec" path="res://Game/matchstick_manager.gd" id="9_match"]
 
 [node name="Main" type="Node2D" node_paths=PackedStringArray("generator", "visualiser", "player", "input_handler", "matchstick_manager")]
 script = ExtResource("1_glv2v")
@@ -44,8 +44,12 @@ position = Vector2(2, 0)
 anchor_mode = 0
 script = ExtResource("7_lgr22")
 
-[node name="InputHandler" type="Node" parent="."]
+[node name="InputHandler" type="Node" parent="." node_paths=PackedStringArray("player", "game", "matchstick_manager")]
 script = ExtResource("8_input")
+player = NodePath("../Player")
+game = NodePath("..")
+matchstick_manager = NodePath("../MatchstickManager")
 
-[node name="MatchstickManager" type="Node" parent="."]
+[node name="MatchstickManager" type="Node" parent="." node_paths=PackedStringArray("player")]
 script = ExtResource("9_match")
+player = NodePath("../Player")
