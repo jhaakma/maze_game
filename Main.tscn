@@ -1,11 +1,13 @@
-[gd_scene load_steps=8 format=3 uid="uid://dv17qr5akn2xf"]
+[gd_scene load_steps=10 format=3 uid="uid://dv17qr5akn2xf"]
 
 [ext_resource type="Script" uid="uid://c0b70vaq8ime7" path="res://main.gd" id="1_glv2v"]
 [ext_resource type="PackedScene" uid="uid://b56xordbbvcq0" path="res://MazeGenerator/MazeVisualiser.tscn" id="2_r0du0"]
 [ext_resource type="PackedScene" uid="uid://bibxrhj7eydpo" path="res://MazeGenerator/MazeGenerator.tscn" id="3_cm0pq"]
-[ext_resource type="Script" uid="uid://bc45bp2ccmjdm" path="res://Rooms/Room.gd" id="4_3dxm6"]
+[ext_resource type="Script" path="res://Entities/Item.gd" id="4_03owx"]
 [ext_resource type="PackedScene" uid="uid://de7e471aj42si" path="res://Player/Player.tscn" id="4_cm0pq"]
-[ext_resource type="Resource" uid="uid://72y2o8eu65fq" path="res://Rooms/room_item.tres" id="5_3dxm6"]
+[ext_resource type="Resource" uid="uid://bjsfhy6sv4ntn" path="res://Items/Chest/chest_item.tres" id="5_chest"]
+[ext_resource type="Resource" uid="uid://c0d1q2c4uqejf" path="res://Enemies/Slime/slime_enemy.tres" id="6_slime"]
+[ext_resource type="Script" path="res://Entities/Enemy.gd" id="6_wkp8b"]
 [ext_resource type="Script" uid="uid://bx85nu0nabb6q" path="res://camera_2d.gd" id="7_lgr22"]
 
 [node name="Main" type="Node2D" node_paths=PackedStringArray("generator", "visualiser", "player")]
@@ -23,13 +25,14 @@ dim_alpha = 0.0
 
 [node name="MazeGenerator" parent="." instance=ExtResource("3_cm0pq")]
 position = Vector2(1, 2)
-room_count = 100
+room_count = 40
 branch_chance = 0.1
 max_walkers = 3
 bounds_min = Vector2i(-10, -8)
 bounds_max = Vector2i(10, 8)
 same_direction_chance = 0.8
-room_types = Array[ExtResource("4_3dxm6")]([ExtResource("5_3dxm6")])
+item_types = Array[ExtResource("4_03owx")]([ExtResource("5_chest")])
+enemy_types = Array[ExtResource("6_wkp8b")]([ExtResource("6_slime")])
 
 [node name="Player" parent="." instance=ExtResource("4_cm0pq")]
 

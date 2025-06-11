@@ -66,6 +66,16 @@ func _draw() -> void:
             var icon_color = Color(1, 1, 1, alpha)  # White with the same alpha
             draw_texture_rect(icon, Rect2(icon_pos, icon_size), false, icon_color)
 
+        # Draw entity icons
+        for ent in room.entities:
+            if ent.icon:
+                var ent_icon = ent.icon
+                var ent_icon_size = Vector2(cell_size, cell_size) * 0.8
+                var ent_icon_pos = Vector2(pos) * cell_size + (Vector2(cell_size, cell_size) - ent_icon_size) / 2.0
+                var ent_icon_color = Color(1, 1, 1, alpha)  # White with the same alpha
+                draw_texture_rect(ent_icon, Rect2(ent_icon_pos, ent_icon_size), false, ent_icon_color)
+
+
 
     # Draw player at their current position
     draw_rect(Rect2(player.position * cell_size, Vector2(cell_size, cell_size)), Color(1, 1, 0, 1.0), false, 4.0)
@@ -73,6 +83,7 @@ func _draw() -> void:
 func _get_room_color(room: Room) -> Color:
     var color = room.color
     return color
+
 
 # Call this function (from an EditorPlugin or a custom UI button) to regenerate the maze.
 func regenerate() -> void:
