@@ -20,7 +20,7 @@ func _draw() -> void:
 
     var player = controller.player
     var player_origin = player.position
-    var matchsticks = controller.matchsticks
+    var matchsticks = controller.matchstick_manager.matchsticks
     var matchstick_data = []
     for m in matchsticks:
         if m.is_active():
